@@ -10,11 +10,13 @@ It can be used to make a build script which creates indivdualised builds of one 
 Motivation
 ----------
 
-A preprocessor everybody is able to understand. It should be VERY clear what it does and what it doesn't.
+We found other preprocessors which where broken and others which seemed way to complex to be sure what they do.
+We wanted to use a preprocessor which works and which is easy to understand. It should be **very** clear what it does and what it doesn't (i.e. it should exactly do what is said about it).
 
 
 Commands
 --------
+Before, after and in between all elements of the expression may occur as much whitespace as wished.
 
 * include
   ```javascript
@@ -49,14 +51,15 @@ Installation
 Copy the repository folder to your node_modules folder.
 
 
-
 Usage
 -----
+
+Normal usage example:
+
   ```javascript
   var uprocess = require("uprocess");
   var processed = uprocess.processFile("some/file.js", { SMALL: true });
   ```
-
 
 Tipps & Tricks
 --------------
@@ -76,3 +79,24 @@ Tipps & Tricks
   // #endif
   ```
   What you use as the define is not important as long as it is only used once inside your project. So filename should be ok normally.
+
+Interface
+---------
+
+The module provides the following functions and variables:
+
+* uprocess.processFile(filePath, extDefines)
+
+filePath is a path to a file whichs content should be processed. extDefines is an object containing external defines which should affect the processing as if they were setted via the #define command. Includes are made relative to the file they are in.
+
+* uprocess.processText(text, extDefines, includeDir)
+
+text is a string which should be processed. extDefines is an object containing external defines which should affect the processing as if they were setted via the #define command. includeDir is the directory all includes inside the text are made to relatively. Includes inside of includes are made relative to the file they are in.
+
+* uprocess.DEBUG
+
+If this flag is setted to true. uprocess prints debug information to stdout (begin and end of files, defines).
+
+* uprocess.endLineDelimiter
+
+Changing this string while change the end of all lines in the result - no matter how the lines where ended before.
