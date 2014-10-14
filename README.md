@@ -1,7 +1,7 @@
 ﻿uprocess
 ========
 
-A simple preprocessor written in javascript, supports include, define, ifdef and ifndef.
+A simple preprocessor written in javascript, supports include, define, undefine, ifdef, ifndef, warning and error.
 
 It takes a file and an object with defines (values are ignored) and returns the processed file. 
 
