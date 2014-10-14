@@ -20,7 +20,7 @@ Commands
   ```javascript
   // #include "some/file.js"
   ```
-  This command takes the text from the specified file (path relative to the parsed file), puts it at its own position and continues to parse with the first line of the new file.
+  This command takes the text from the specified file (path relative to the parsed file), processes it and the puts it at its own position and continues with next line after the included file.
  
 * define, undefine
   ```javascript
@@ -34,13 +34,13 @@ Commands
   some code
   // #endif
   ```
-  When the Preprocessor reaches this line he checks if the condition is fullfilled (if the following name is defined (#ifdef) or not defined (#ifndef)). If it is it removes the line it is in and continues to parse and when it reaches the corresponding #endif this line is removed, too. Else it removes all lines from the result till the fitting #endif and continues to parse with the following line.
+  When the Preprocessor reaches this line it checks if the condition is fullfilled (if the following name is defined (#ifdef) or not defined (#ifndef)). If it is it removes the line it is in and continues to parse and when it reaches the corresponding #endif this line is removed, too. Else it removes all lines from the result till the fitting #endif and continues to parse with the following line.
 
 * warning, error
   ```javascript
   // #warning "The programm is still missing some functionality, don't deliver!"
   ```
-  A warning is printed to the console via console.warn() prepended with "Preprocessor warning: ". #error does raise an error, that means the preprocessing is canceled if the preprocessor reaches this point.
+  A warning is printed to the console via console.warn() prepended with "Preprocessor warning: ". #error raises an error, that means the preprocessing is canceled if the preprocessor reaches this point.
 
 
 Installation
