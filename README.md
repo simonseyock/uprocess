@@ -78,7 +78,7 @@ Tipps & Tricks
   
   // #endif
   ```
-  What you use as the define is not important as long as it is only used once inside your project. So filename should be ok normally.
+  What you use as the define (``__FILENAME__``) should be unique for the whole project! 
 
 Interface
 ---------
