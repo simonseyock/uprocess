@@ -22,13 +22,13 @@ Before, after and in between all elements of the expression may occur as much wh
   ```javascript
   // #include "some/file.js"
   ```
-  This command takes the text from the specified file (path relative to the parsed file), processes it and the puts it at its own position and continues with next line after the included file.
+  This command takes the text from the specified file (path relative to the parsed file), processes it and the puts it at its own position and continues with next line after the included file. Includepaths are relative to the file they are in or if it is inside the text passed to processText it is relative to the given includeDir.
  
 * define, undefine
   ```javascript
   // #define FLAG
   ```
-  This command adds FLAG to defines, removes the line it is in and continues to parse. #undefine would remove the given name from defines.
+  This command adds FLAG to defines, removes the line it is in and continues to parse. ``#undefine`` would remove the given name from defines.
  
 * ifdef, ifndef
   ```javascript
@@ -36,13 +36,13 @@ Before, after and in between all elements of the expression may occur as much wh
   some code
   // #endif
   ```
-  When the Preprocessor reaches this line it checks if the condition is fullfilled (if the following name is defined (#ifdef) or not defined (#ifndef)). If it is it removes the line it is in and continues to parse and when it reaches the corresponding #endif this line is removed, too. Else it removes all lines from the result till the fitting #endif and continues to parse with the following line.
+  When the Preprocessor reaches this line it checks if the condition is fullfilled (if the following name is defined (``#ifdef``) or not defined (``#ifndef``)). If it is it removes the line it is in and continues to parse and when it reaches the corresponding ``#endif`` this line is removed, too. Else it removes all lines from the result till the fitting #endif and continues to parse with the following line.
 
 * warning, error
   ```javascript
   // #warning "The programm is still missing some functionality, don't deliver!"
   ```
-  A warning is printed to the console via console.warn() prepended with "Preprocessor warning: ". #error raises an error, that means the preprocessing is canceled if the preprocessor reaches this point.
+  A warning is printed to the console via ``console.warn()`` prepended with ``"Preprocessor warning: "``. ``#error`` raises an error, that means the preprocessing is canceled if the preprocessor reaches this point.
 
 
 Installation
@@ -85,18 +85,18 @@ Interface
 
 The module provides the following functions and variables:
 
-* uprocess.processFile(filePath, extDefines)
+* ``uprocess.processFile(filePath, extDefines)``
 
-filePath is a path to a file whichs content should be processed. extDefines is an object containing external defines which should affect the processing as if they were setted via the #define command. Includes are made relative to the file they are in.
+  ``filePath`` is a path to a file whichs content should be processed. ``extDefines`` is an object containing external defines which should affect the processing as if they were setted via the ``#define`` command. Includepaths are relative to the file they are in.
 
-* uprocess.processText(text, extDefines, includeDir)
+* ``uprocess.processText(text, extDefines, includeDir)``
 
-text is a string which should be processed. extDefines is an object containing external defines which should affect the processing as if they were setted via the #define command. includeDir is the directory all includes inside the text are made to relatively. Includes inside of includes are made relative to the file they are in.
+  ``text`` is a string which should be processed. ``extDefines`` is an object containing external defines which should affect the processing as if they were setted via the ``#define`` command. ``includeDir`` is the directory all includes inside the text are made to relatively. Includepaths inside of included files are relative to the file they are in.
 
-* uprocess.DEBUG
+* ``uprocess.DEBUG``
 
-If this flag is setted to true. uprocess prints debug information to stdout (begin and end of files, defines).
+  If this flag is setted to true. uprocess prints debug information to stdout (begin and end of files, defines).
 
-* uprocess.endLineDelimiter
+* ``uprocess.endLineDelimiter``
 
-Changing this string while change the end of all lines in the result - no matter how the lines where ended before.
+  Changing this string will change the end of all lines in the result - no matter how the lines were ended before.
