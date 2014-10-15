@@ -64,7 +64,7 @@ Normal usage example:
 Tipps & Tricks
 --------------
 
-* Include a file once
+* Include a file only once, even if it is stated in several include statements
 
   This works like in C. Surround every file you want to include once with statements like this (inside the file):
   ```javascript
