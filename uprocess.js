@@ -33,16 +33,13 @@ exports.outputLineDelimiter = "\n";
  */
 exports.processFile = function ( file, extDefines ) {
 
-    var includeDir = path.dirname( file );
-    
     var defines = ( typeof extDefines === "object" ) ? copyObject( extDefines ) : {};
 
-    var lines = fs.readFileSync( file, "utf-8" ).split( /[\n\r]{1,2}/gm );
+    var lines = splitIntoLines( fs.readFileSync( file, "utf-8" ) );
 
     debugMsg( "Start of File: " + file );
-    var newLines = processLines( lines, defines, includeDir );
+    var newLines = processLines( lines, defines, path.dirname( file ), path.basename( file ) );
     debugMsg( "End of File: " + file );
-   
 
     return newLines.join( exports.outputLineDelimiter );
 };
@@ -56,9 +53,9 @@ exports.processText = function ( text, extDefines, includeDir ) {
 
     var defines = ( typeof extDefines === "object" ) ? copyObject( extDefines ) : {};
 
-    var lines = text.split( /[\n\r]{1,2}/gm );
+    var lines = splitIntoLines( text );
 
-    var newLines = processLines( lines, defines, includeDir );
+    var newLines = processLines( lines, defines, includeDir, "" );
 
     return newLines.join( exports.outputLineDelimiter );
 };
@@ -69,7 +66,7 @@ exports.processText = function ( text, extDefines, includeDir ) {
  * It checks each line for a preprocessor expression and if it finds one it is evaluated and removed afterwards. The 
  * variable containing the linenumber is adjusted accordingly.
  * If the variable excluded is bigger than 0 this means the lines which do not contain another ifdef/ifndef or an endif
- * are ignored and excluded. If excluded is bigger than o AND it reaches an ifdef/ifndef excluded is raised by 1 and 
+ * are ignored and excluded. If excluded is bigger than 0 AND it reaches an ifdef/ifndef excluded is raised by 1 and 
  * if it reaches an endif it is lowered by 1 till it reaches 0.
  * define/undefine:
  * adds/removes a variablename to the defines object, which is used by reference, that means the define will be
@@ -84,10 +81,10 @@ exports.processText = function ( text, extDefines, includeDir ) {
  * The corresponding endif is the endif which has the same amount of ifdef/ifndef and endif expressions in between
  * the ifdef/ifndef and endif expression.
  */
-function processLines( lines, defines, includeDir ) {
+function processLines( lines, defines, includeDir, fileName ) {
 
     debugMsg( "Defines:" );
-    debugMsg( defines );  
+    debugMsg( defines );
 
     var openexpressions = [];
 
@@ -125,13 +122,13 @@ function processLines( lines, defines, includeDir ) {
             if ( lines[linenumber].match( expressions.INCLUDE ) ) {
                 expvalue = lines[linenumber].match( expressions.INCLUDE )[1];
 
-                var filePath = path.join( includeDir, expvalue );
+                var includeFile = path.join( includeDir, expvalue );
 
-                var newLines = fs.readFileSync( filePath, "utf-8" ).split( /[\n\r]{1,2}/gm );
+                var newLines = splitIntoLines( fs.readFileSync( includeFile, "utf-8" ) );
 
-                debugMsg( "start of File: " + filePath );
-                newLines = processLines( newLines, defines, path.dirname( filePath ) ); // recurse
-                debugMsg( "end of File: " + filePath );
+                debugMsg( "start of File: " + includeFile );
+                newLines = processLines( newLines, defines, path.dirname( includeFile ), path.basename( includeFile ) ); // recurse
+                debugMsg( "end of File: " + includeFile );
 
 
                 lines = removeSingleLine( lines, linenumber );
@@ -144,7 +141,12 @@ function processLines( lines, defines, includeDir ) {
             //WARNING
             if ( lines[linenumber].match( expressions.WARNING ) ) {
                 expvalue = lines[linenumber].match( expressions.WARNING )[1];
-                console.warn( "Preprocessor warning: " + expvalue );
+
+                if ( fileName ) {
+                    console.warn( '#warning in "' + path.join( includeDir, fileName ) + '":' + expvalue );
+                } else {
+                    console.warn( "#warning: " + expvalue );
+                }
 
                 lines = removeSingleLine( lines, linenumber );
                 linenumber -= 1;
@@ -154,7 +156,12 @@ function processLines( lines, defines, includeDir ) {
             //ERROR
             if ( lines[linenumber].match( expressions.ERROR ) ) {
                 expvalue = lines[linenumber].match( expressions.ERROR )[1];
-                throw new Error( "Preprocessor error: " + expvalue );
+
+                if ( fileName ) {
+                    throw new Error( '#error in "' + path.join( includeDir, fileName ) + '":' + expvalue );
+                } else {
+                    throw new Error( "#error: " + expvalue );
+                }
             }
 
         }
@@ -231,8 +238,8 @@ function copyObject( obj ) {
  * debugMsg prints a debug message if the DEBUG flag is setted to true
  */
 function debugMsg( debugmsg ) {
-    if (exports.DEBUG) {
-        console.log(debugmsg);
+    if ( exports.DEBUG ) {
+        console.log( debugmsg );
     }
 }
 
@@ -260,3 +267,9 @@ function insertLines( lines, index, newLines ) {
     return lines.slice( 0, index ).concat( newLines ).concat( lines.slice( index ) );
 }
 
+/*
+ * splitIntoLines splits a text into lines
+ */
+function splitIntoLines( text ) {
+    return text.split( /[\r\n]{1,2}/gm );
+}
