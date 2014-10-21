@@ -64,7 +64,7 @@ exports.processText = function ( text, extDefines, includeDir ) {
  * processLines is the internal function which takes an array of lines, an object with defines and an includeDir to 
  * include files relative to.
  * It checks each line for a preprocessor expression and if it finds one it is evaluated and removed afterwards. The 
- * variable containing the linenumber is adjusted accordingly.
+ * variable containing the lineNumber is adjusted accordingly.
  * If the variable excluded is bigger than 0 this means the lines which do not contain another ifdef/ifndef or an endif
  * are ignored and excluded. If excluded is bigger than 0 AND it reaches an ifdef/ifndef excluded is raised by 1 and 
  * if it reaches an endif it is lowered by 1 till it reaches 0.
@@ -92,131 +92,136 @@ function processLines( lines, defines, includeDir, fileName ) {
 
     var expvalue;
 
-    for ( var linenumber = 0; linenumber < lines.length; linenumber += 1 ) {
+    var originalLineNumber = 0;
 
-        if ( !excluded ) {
+    try {
 
-            //DEFINE
-            if ( lines[linenumber].match( expressions.DEFINE ) ) {
-                expvalue = lines[linenumber].match( expressions.DEFINE )[1];
-                defines[expvalue] = true;
-                lines = removeSingleLine( lines, linenumber );
+        for ( var lineNumber = 0; lineNumber < lines.length; lineNumber += 1 ) {
 
-                linenumber -= 1;
-                continue;
-            }
+            originalLineNumber += 1;
+        
+            if ( !excluded ) {
 
-            //UNDEFINE
-            if ( lines[linenumber].match( expressions.UNDEFINE ) ) {
-                expvalue = lines[linenumber].match( expressions.UNDEFINE )[1];
-                if ( expvalue in defines ) {
-                    delete defines[expvalue];
+                //DEFINE
+                if ( lines[lineNumber].match( expressions.DEFINE ) ) {
+                    expvalue = lines[lineNumber].match( expressions.DEFINE )[1];
+                    defines[expvalue] = true;
+                    lines = removeSingleLine( lines, lineNumber );
+
+                    lineNumber -= 1;
+                    continue;
                 }
-                lines = removeSingleLine( lines, linenumber );
 
-                linenumber -= 1;
+                //UNDEFINE
+                if ( lines[lineNumber].match( expressions.UNDEFINE ) ) {
+                    expvalue = lines[lineNumber].match( expressions.UNDEFINE )[1];
+                    if ( expvalue in defines ) {
+                        delete defines[expvalue];
+                    }
+                    lines = removeSingleLine( lines, lineNumber );
+
+                    lineNumber -= 1;
+                    continue;
+                }
+
+                //INCLUDE
+                if ( lines[lineNumber].match( expressions.INCLUDE ) ) {
+                    expvalue = lines[lineNumber].match( expressions.INCLUDE )[1];
+
+                    var includeFile = path.join( includeDir, expvalue );
+
+                    var newLines = splitIntoLines( fs.readFileSync( includeFile, "utf-8" ) );
+
+                    debugMsg( "start of File: " + includeFile );
+                    newLines = processLines( newLines, defines, path.dirname( includeFile ), path.basename( includeFile ) ); // recurse
+                    debugMsg( "end of File: " + includeFile );
+
+
+                    lines = removeSingleLine( lines, lineNumber );
+                    lines = insertLines( lines, lineNumber, newLines );
+
+                    lineNumber += newLines.length - 1;
+                    continue;
+                }
+
+                //WARNING
+                if ( lines[lineNumber].match( expressions.WARNING ) ) {
+                    expvalue = lines[lineNumber].match( expressions.WARNING )[1];
+
+                    console.warn( '#warning: ' + expvalue + errorLocation( originalLineNumber, includeDir, fileName ) );
+
+                    lines = removeSingleLine( lines, lineNumber );
+                    lineNumber -= 1;
+                    continue;
+                }
+
+                //ERROR
+                if ( lines[lineNumber].match( expressions.ERROR ) ) {
+                    expvalue = lines[lineNumber].match( expressions.ERROR )[1];
+
+                    throw new Error( '#error: ' + expvalue ); //errorLocation gets append in the catch block
+                }
+
+            }
+
+            //IFDEF
+            if ( lines[lineNumber].match( expressions.IFDEF ) ) {
+
+                openexpressions.push( lineNumber );
+                expvalue = lines[lineNumber].match( expressions.IFDEF )[1];
+                if ( !( expvalue in defines ) || excluded ) {
+                    excluded += 1;
+                }
+
+                lines = removeSingleLine( lines, lineNumber );
+                lineNumber -= 1;
                 continue;
             }
 
-            //INCLUDE
-            if ( lines[linenumber].match( expressions.INCLUDE ) ) {
-                expvalue = lines[linenumber].match( expressions.INCLUDE )[1];
+            //IFNDEF
+            if ( lines[lineNumber].match( expressions.IFNDEF ) ) {
 
-                var includeFile = path.join( includeDir, expvalue );
+                openexpressions.push( lineNumber );
+                expvalue = lines[lineNumber].match( expressions.IFNDEF )[1];
+                if ( ( expvalue in defines ) || excluded ) {
+                    excluded += 1;
+                }
 
-                var newLines = splitIntoLines( fs.readFileSync( includeFile, "utf-8" ) );
-
-                debugMsg( "start of File: " + includeFile );
-                newLines = processLines( newLines, defines, path.dirname( includeFile ), path.basename( includeFile ) ); // recurse
-                debugMsg( "end of File: " + includeFile );
-
-
-                lines = removeSingleLine( lines, linenumber );
-                lines = insertLines( lines, linenumber, newLines );
-
-                linenumber += newLines.length - 1;
+                lines = removeSingleLine( lines, lineNumber );
+                lineNumber -= 1;
                 continue;
             }
 
-            //WARNING
-            if ( lines[linenumber].match( expressions.WARNING ) ) {
-                expvalue = lines[linenumber].match( expressions.WARNING )[1];
+            //ENDIF
+            if ( lines[lineNumber].match( expressions.ENDIF ) ) {
 
-                if ( fileName ) {
-                    console.warn( '#warning in "' + path.join( includeDir, fileName ) + '":' + expvalue );
+                var startline = openexpressions.pop();
+                if ( startline !== undefined ) {
+                    if ( excluded ) {
+                        lines = removeLines( lines, startline, lineNumber + 1 );
+                        lineNumber = startline - 1;
+                        excluded -= 1;
+                    } else {
+                        lines = removeSingleLine( lines, lineNumber );
+                        lineNumber -= 1;
+                    }
+                    continue;
                 } else {
-                    console.warn( "#warning: " + expvalue );
-                }
-
-                lines = removeSingleLine( lines, linenumber );
-                linenumber -= 1;
-                continue;
-            }
-
-            //ERROR
-            if ( lines[linenumber].match( expressions.ERROR ) ) {
-                expvalue = lines[linenumber].match( expressions.ERROR )[1];
-
-                if ( fileName ) {
-                    throw new Error( '#error in "' + path.join( includeDir, fileName ) + '":' + expvalue );
-                } else {
-                    throw new Error( "#error: " + expvalue );
+                    throw new Error( "Too many ENDIF expressions in text!" );
                 }
             }
 
         }
 
-        //IFDEF
-        if ( lines[linenumber].match( expressions.IFDEF ) ) {
+        originalLineNumber = 0;
 
-            openexpressions.push( linenumber );
-            expvalue = lines[linenumber].match( expressions.IFDEF )[1];
-            if ( !( expvalue in defines ) || excluded ) {
-                excluded += 1;
-            }
-
-            lines = removeSingleLine( lines, linenumber );
-            linenumber -= 1;
-            continue;
+        if ( openexpressions.length !== 0 ) {
+            throw new Error( openexpressions.length + " missing ENDIF expressions!" );
         }
 
-        //IFNDEF
-        if ( lines[linenumber].match( expressions.IFNDEF ) ) {
-
-            openexpressions.push( linenumber );
-            expvalue = lines[linenumber].match( expressions.IFNDEF )[1];
-            if ( ( expvalue in defines ) || excluded ) {
-                excluded += 1;
-            }
-
-            lines = removeSingleLine( lines, linenumber );
-            linenumber -= 1;
-            continue;
-        }
-
-        //ENDIF
-        if ( lines[linenumber].match( expressions.ENDIF ) ) {
-
-            var startline = openexpressions.pop();
-            if ( startline !== undefined ) {
-                if ( excluded ) {
-                    lines = removeLines( lines, startline, linenumber + 1 );
-                    linenumber = startline - 1;
-                    excluded -= 1;
-                } else {
-                    lines = removeSingleLine( lines, linenumber );
-                    linenumber -= 1;
-                }
-                continue;
-            } else {
-                throw new Error( "Too many ENDIF expressions in text!" );
-            }
-        }
-
-    }
-
-    if ( openexpressions.length !== 0 ) {
-        throw new Error( openexpressions.length + " missing ENDIF expressions!" );
+    } catch ( e ) {
+        e.message += errorLocation( originalLineNumber, includeDir, fileName ) + "\n";
+        throw e;
     }
 
     return lines;
@@ -272,4 +277,25 @@ function insertLines( lines, index, newLines ) {
  */
 function splitIntoLines( text ) {
     return text.split( /[\r\n]{1,2}/gm );
+}
+
+/*
+ * errorLocation with opt_linenumber and opt_filename
+ */
+function errorLocation( opt_linenumber, includeDir, opt_filename ) {
+
+    var msg = "";
+    if ( opt_linenumber || opt_filename ) {
+        msg = '\noccured while processing';
+
+        if ( opt_filename ) {
+             msg += ' "' + path.join( includeDir, opt_filename ) + '"';
+        }
+
+        if ( opt_linenumber ) {
+            msg += ' line ' + opt_linenumber;
+        }
+    }
+
+    return msg;
 }
