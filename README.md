@@ -11,7 +11,7 @@ Motivation
 ----------
 
 We found other preprocessors which where broken and others which seemed way to complex to be sure what they do.
-We wanted to use a preprocessor which works and which is easy to understand. It should be **very** clear what it does and what it doesn't (i.e. it should do exactly what is said about it and the code should be clear).
+We wanted to use a preprocessor which works and which is easy to understand. It should be **very** clear what it does and what it doesn't (i.e. it should do exactly what is said about it and the code should be clear). We will appreciate it if you inform us about any behaviour inconsistent with documentation.
 
 
 Commands
