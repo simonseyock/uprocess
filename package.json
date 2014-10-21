@@ -1,6 +1,6 @@
 {
   "name": "uprocess",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "A simple preprocessor written in javascript, supports include, define, undefine, ifdef, ifndef, warning and error.",
   "keywords": [
     "preprocessor",
