@@ -5,13 +5,12 @@ A simple preprocessor written in JavaScript that supports include, define, undef
 
 It takes a file and an object containing defines and returns the processed file as a string. Note that like in C# a preprocessor variable can only be either define or not defined. If you try to assign it a value, that values is ignored.
 
-Intended uses are writing  a build script which creates indivdualised builds of a piece oft software, including files into other files, and making sure that certain files are not included more than once.
+Intended uses are writing a build script which creates individualised builds of a program, including source files into other source files, and making sure that certain files are not included more than once.
 
 Motivation
 ----------
 
-We tried other preprocessors but found that they were either broken or way too complex to be sure what they do (leave alone come in handy). We wanted to use a preprocessor which works and which is easy to understand. It should be **very** clear what it does and what it doesn't. We want the program to do exactly what the documentation says so please inform us about any behaviour inconsistent with documentation (even if you find that deviation useful).
-
+We tried other preprocessors but found that they were either broken or way too complex to be sure what they do. We wanted to use a preprocessor which works and which is easy to understand. It should be **very** clear what it does and what it doesn't. We want the program to do exactly what the documentation says so please inform us about any behaviour inconsistent with documentation (even if you find that deviation useful).
 
 Commands
 --------
