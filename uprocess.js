@@ -13,7 +13,8 @@ expressions = {
     ENDIF: /^\s*\/\/\s+#endif/,
     UNDEFINE: /^\s*\/\/\s+#undefine\s+(\S+)/,
     WARNING: /^\s*\/\/\s+#warning\s+"([^"]+)"/,
-    ERROR: /^\s*\/\/\s+#error\s+"([^"]+)"/
+    ERROR: /^\s*\/\/\s+#error\s+"([^"]+)"/,
+    UNKNOWNCOMMAND: /^\s*\/\/\s+#([^\s]*)/
 };
 
 /*
@@ -99,11 +100,10 @@ function processLines( lines, defines, includeDir, fileName ) {
         for ( var lineNumber = 0; lineNumber < lines.length; lineNumber += 1 ) {
 
             originalLineNumber += 1;
-        
-            if ( !excluded ) {
-
-                //DEFINE
-                if ( lines[lineNumber].match( expressions.DEFINE ) ) {
+            
+            //DEFINE
+            if ( lines[lineNumber].match( expressions.DEFINE ) ) {
+                if ( !excluded ) {
                     expvalue = lines[lineNumber].match( expressions.DEFINE )[1];
                     defines[expvalue] = true;
                     lines = removeSingleLine( lines, lineNumber );
@@ -111,9 +111,11 @@ function processLines( lines, defines, includeDir, fileName ) {
                     lineNumber -= 1;
                     continue;
                 }
+            }
 
-                //UNDEFINE
-                if ( lines[lineNumber].match( expressions.UNDEFINE ) ) {
+            //UNDEFINE
+            else if ( lines[lineNumber].match( expressions.UNDEFINE ) ) {
+                if ( !excluded ) {
                     expvalue = lines[lineNumber].match( expressions.UNDEFINE )[1];
                     if ( expvalue in defines ) {
                         delete defines[expvalue];
@@ -123,9 +125,11 @@ function processLines( lines, defines, includeDir, fileName ) {
                     lineNumber -= 1;
                     continue;
                 }
+            }
 
-                //INCLUDE
-                if ( lines[lineNumber].match( expressions.INCLUDE ) ) {
+            //INCLUDE
+            else if ( lines[lineNumber].match( expressions.INCLUDE ) ) {
+                if ( !excluded ) {
                     expvalue = lines[lineNumber].match( expressions.INCLUDE )[1];
 
                     var includeFile = path.join( includeDir, expvalue );
@@ -143,9 +147,11 @@ function processLines( lines, defines, includeDir, fileName ) {
                     lineNumber += newLines.length - 1;
                     continue;
                 }
-
-                //WARNING
-                if ( lines[lineNumber].match( expressions.WARNING ) ) {
+            }
+            
+            //WARNING
+            else if ( lines[lineNumber].match( expressions.WARNING ) ) {
+                if ( !excluded ) {
                     expvalue = lines[lineNumber].match( expressions.WARNING )[1];
 
                     console.warn( '#warning: ' + expvalue + errorLocation( originalLineNumber, includeDir, fileName ) );
@@ -154,18 +160,19 @@ function processLines( lines, defines, includeDir, fileName ) {
                     lineNumber -= 1;
                     continue;
                 }
+            }
 
-                //ERROR
-                if ( lines[lineNumber].match( expressions.ERROR ) ) {
+            //ERROR
+            else if ( lines[lineNumber].match( expressions.ERROR ) ) {
+                if ( !excluded ) {
                     expvalue = lines[lineNumber].match( expressions.ERROR )[1];
 
                     throw new Error( '#error: ' + expvalue ); //errorLocation gets append in the catch block
                 }
-
             }
 
             //IFDEF
-            if ( lines[lineNumber].match( expressions.IFDEF ) ) {
+            else if ( lines[lineNumber].match( expressions.IFDEF ) ) {
 
                 openexpressions.push( lineNumber );
                 expvalue = lines[lineNumber].match( expressions.IFDEF )[1];
@@ -179,7 +186,7 @@ function processLines( lines, defines, includeDir, fileName ) {
             }
 
             //IFNDEF
-            if ( lines[lineNumber].match( expressions.IFNDEF ) ) {
+            else if ( lines[lineNumber].match( expressions.IFNDEF ) ) {
 
                 openexpressions.push( lineNumber );
                 expvalue = lines[lineNumber].match( expressions.IFNDEF )[1];
@@ -193,7 +200,7 @@ function processLines( lines, defines, includeDir, fileName ) {
             }
 
             //ENDIF
-            if ( lines[lineNumber].match( expressions.ENDIF ) ) {
+            else if ( lines[lineNumber].match( expressions.ENDIF ) ) {
 
                 var startline = openexpressions.pop();
                 if ( startline !== undefined ) {
@@ -209,6 +216,12 @@ function processLines( lines, defines, includeDir, fileName ) {
                 } else {
                     throw new Error( "Too many ENDIF expressions in text!" );
                 }
+            }
+            
+            // UNKNOWNCOMMAND
+            else if ( lines[lineNumber].match( expressions.UNKNOWNCOMMAND ) ) {
+                expvalue = lines[lineNumber].match( expressions.UNKNOWNCOMMAND )[1];
+                console.warn( 'Unknown command #' + expvalue + " found " + errorLocation( originalLineNumber, includeDir, fileName ) );
             }
 
         }
