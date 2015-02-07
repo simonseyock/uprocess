@@ -20,13 +20,13 @@ Before, after and in between all elements of the expression may occur as much wh
   ```javascript
   // #include "some/file.js"
   ```
-  This command takes the text from the specified file (path relative to the parsed file), processes it text and replaces the line it is in by the output. Processing of the current file then is recommenced at the next line. Includepaths are relative to the file they are in and in case of text passed directly to processText they are relative to the given includeDir.
+  This command takes the text from the specified file (path relative to the parsed file), processes it text and replaces itself by the output. Processing of the current file then is recommenced at the next line. Includepaths are relative to the file they are, in case of text passed directly to processText they are relative to the given includeDir.
  
 * define, undefine
   ```javascript
   // #define FLAG
   ```
-  This command adds the given text (without whitespace in it, in this case FLAG) to the list of defines, removes the line it is in and continues to parse. ``#undefine`` removes the given name from defines.
+  This command adds FLAG to the list of defines, removes the line it is in and continues to parse. ``#undefine`` removes the given name from defines.
  
 * ifdef, ifndef
   ```javascript
@@ -40,13 +40,13 @@ Before, after and in between all elements of the expression may occur as much wh
   ```javascript
   // #warning "The programm is still missing some functionality, don't deliver!"
   ```
-  A warning is printed to the console via ``console.warn()`` prepended with ``"#warning: "``. Likewise, ``#error`` raises an error message that is prepended with ``"#error: "`` which means that the preprocessing is canceled once the preprocessor reaches this point.
+  A warning is printed to the console via ``console.warn()`` prepended with ``"Preprocessor warning: "``. Likewise, ``#error`` raises an error message that is prepended with ``"Preprocessor error: "`` which means that the preprocessing is canceled once the preprocessor reaches this point.
 
 
 Installation
 ------------
 
-Copy the repository folder to your node_modules folder.
+You can install this package via `npm install uprocess` or copy the repository folder to your node_modules folder.
 
 
 Usage
@@ -76,7 +76,7 @@ Tips & Tricks
   
   // #endif
   ```
-  What you use as the define (in this case ``__FILENAME__``) should be unique for the whole project!
+  What you use as the define (``__FILENAME__``) should be unique for the whole project!
 
 Interface
 ---------
@@ -89,7 +89,7 @@ The module provides the following functions and variables:
 
 * ``uprocess.processText(text, extDefines, includeDir)``
 
-  ``text`` is a string to be processed. ``extDefines`` is an object containing external defines which affect the processing as if they were set via the ``#define`` command. ``includeDir`` is the directory all includes inside the text are made relative to. Includepaths inside of included files are relative to the path to the file they occur in.
+  ``text`` is a string to be processed. ``extDefines`` is an object containing external defines which affect the processing as if they were set via the ``#define`` command. ``includeDir`` is the directory all includes inside the text are made relative to. Includepaths inside of included files are relative to the path to the file file they occur in.
 
 * ``uprocess.DEBUG``
 
