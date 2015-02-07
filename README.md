@@ -84,6 +84,25 @@ Tips & Tricks
   // #endif
   ```
   What you use as the define (``__FILENAME__``) should be unique for the whole project!
+  
+* Making a build-script might be useful
+
+  File: build.js
+  ```javascript
+  var fs = require("fs");
+  var uprocess = require("uprocess");
+  
+  var startFile = "some/file.unprocessed.js";
+  var outFile = "some/file.js"
+  var defines = {
+	SMALL: true,
+	MOBILE: false
+	};
+	
+  fs.writeFileSync( outFile, uprocess.processFile(startFile, defines) );
+  ```
+  
+  Then you can easily invoke it with ``node build.js`` from the commandline!
 
 Interface
 ---------
