@@ -58,6 +58,13 @@ Typical usage example:
   var uprocess = require("uprocess");
   var processed = uprocess.processFile("some/file.js", { SMALL: true });
   ```
+  
+To write it into a file you can use fs. You can't use this tool in the browser, neither can't you use it from the command line, yet. How it's done:
+
+  ```javascript
+  var fs = require("fs");
+  fs.writeFile("some/file.processed.js", processed);
+  ```
 
 Tips & Tricks
 -------------
