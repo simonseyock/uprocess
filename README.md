@@ -85,7 +85,7 @@ Tips & Tricks
   ```
   What you use as the define (``__FILENAME__``) should be unique for the whole project!
   
-* Making a build-script might be useful
+* Creating a build-script might be useful
 
   File: build.js
   ```javascript
