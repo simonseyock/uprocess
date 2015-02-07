@@ -59,7 +59,7 @@ Typical usage example:
   var processed = uprocess.processFile("some/file.js", { SMALL: true });
   ```
   
-To write it into a file you can use fs. You can't use this tool in the browser, neither can't you use it from the command line, yet. How it's done:
+Neither you can use this tool in the browser, nor can you use it from the command line, yet. To use it you need to write it into a file. How it's done (with fs):
 
   ```javascript
   var fs = require("fs");
