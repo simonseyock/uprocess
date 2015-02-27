@@ -1,6 +1,6 @@
 {
   "name": "uprocess",
-  "version": "1.0.8",
+  "version": "1.1.0",
   "description": "A simple preprocessor written in javascript, supports include, define, undefine, ifdef, ifndef, warning and error.",
   "keywords": [
     "preprocessor",
@@ -38,7 +38,7 @@
     "url": "https://github.com/simonseyock/uprocess"
   },
   "dependencies": {
-	"commander": "latest"
+	"commander": "2.6.0"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

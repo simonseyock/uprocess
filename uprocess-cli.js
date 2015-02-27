@@ -77,7 +77,7 @@
 				throw new Error("Problems writing to the specified output file.");
 			}
 		} else {
-			process.stdout.write(processed);
+			console.log(processed);
 		}
 	};
 
@@ -90,10 +90,12 @@
 		// stdin		
 		process.stdin.setEncoding('utf8');
 
-		process.stdin.on('readable', function() {
+		process.stdin.once('readable', function() {
 		  var chunk = process.stdin.read();
 		  if (chunk !== null) {
 			stdinData += chunk;
+		  } else {
+			  process.stdin.end();
 		  }
 		});
 
