@@ -104,8 +104,8 @@ Tips & Tricks
   
   Then you can easily invoke it with ``node build.js`` from the commandline!
 
-Interface
----------
+API
+---
 
 The module provides the following functions and variables:
 
@@ -124,6 +124,20 @@ The module provides the following functions and variables:
 * ``uprocess.endLineDelimiter``
 
   Changing this string will change the ends of all lines in the result - irrespective of the original line ends.
+
+Command Line Interface
+----------------------
+
+Usage: ``uprocess [options] [<file>]`` (or ``node_modules/.bin/uprocess [options] [<file>]``).
+
+It can read a text from standard output or from a given file (not both). It can output to stdout or a specified file.
+
+Options:
+
+    -h, --help                 output usage information
+    -d, --defines [value]      Defines used for the preprocessing. Either a JSON string or a JSON file.
+    -o, --output [value]       A file to write the output to
+    -i, --includePath [value]  A path to look for includes. Required if using stdin.
 
 Documentation
 -------------
